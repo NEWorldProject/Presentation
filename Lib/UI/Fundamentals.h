@@ -1,10 +1,16 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include "Core/Filesystem.h"
+#include "Base.h"
+#include "Exceptions.h"
+#include "Core/Delegate.h"
 #include "Core/Intrusive.h"
-#include "Common.h"
+#include "Core/Filesystem.h"
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <utility>
+#include <type_traits>
+#include <unordered_map>
 
 namespace Presentation::UI {
     class Element : public IntrusiveVTBase {
@@ -33,6 +39,105 @@ namespace Presentation::UI {
         Identifier _Id;
     };
 
+    class EventCatalog {
+    public:
+        using TypeInfoRef = std::reference_wrapper<const std::type_info>;
+
+        template <template <class T> class ContT>
+        EventCatalog(const EventCatalog& extends, const ContT<TypeInfoRef>& cont)
+                : _CheckTable(extends._CheckTable), _Names(extends._Names) {
+            for (const auto& node : cont) {
+                _Names.insert_or_assign(_CheckTable.size(), node);
+                _CheckTable.push_back(node);
+            }
+        }
+
+        template <template <class T> class ContT>
+        explicit EventCatalog(const ContT<TypeInfoRef>& cont)
+                : _CheckTable{}, _Names{} {
+            for (const auto& node : cont) {
+                _Names.insert_or_assign(node, std::make_pair(this, _CheckTable.size()));
+                _CheckTable.push_back(this);
+            }
+        }
+
+        template <class ...Ts>
+        static EventCatalog Create() {
+            return EventCatalog(std::initializer_list<TypeInfoRef>{TypeInfoRef(typeid(Ts))...});
+        }
+
+        auto Count() const noexcept { return _Names.size(); }
+
+        auto Search(const TypeInfoRef& type) const noexcept {
+            if (auto res = _Names.find(type); res!=_Names.end())
+                return std::make_tuple(true, res->second.first, res->second.second);
+            else
+                return std::make_tuple(false, (const EventCatalog*) (nullptr), 0);
+        }
+
+        bool Check(const std::pair<const EventCatalog*, int>& info) const noexcept {
+            if (info.second<_CheckTable.size())
+                return info.first==_CheckTable[info.second];
+            return false;
+        }
+    private:
+        struct Hash {
+            std::size_t operator()(TypeInfoRef code) const noexcept {
+                return code.get().hash_code();
+            }
+        };
+
+        struct EqualTo {
+            bool operator()(TypeInfoRef lhs, TypeInfoRef rhs) const noexcept {
+                return lhs.get()==rhs.get();
+            }
+        };
+
+        std::vector<const EventCatalog*> _CheckTable;
+        std::unordered_map<TypeInfoRef, std::pair<const EventCatalog*, int>, Hash, EqualTo> _Names;
+    };
+
+    class MessageBase {
+        friend class EventNode;
+    private:
+        std::pair<const EventCatalog*, int> _CastInfo;
+    };
+
+    class EventNode : public virtual Element {
+        template <class Message>
+        using CheckMessage = std::enable_if<std::is_convertible_v<Message*, MessageBase*>>;
+    public:
+        EventNode();
+
+        explicit EventNode(const EventCatalog& catalog);
+
+        template <class MessageType, class Func, class = CheckMessage<MessageType>>
+        Connection Listen(Func&& function) {
+            if (const auto[found, _, Id] = _Catalog->Search(typeid(MessageType)); found)
+                return _Signals[Id].ConnectUnsafe<MessageType>(std::forward<std::decay_t<Func>>(function));
+            return Connection();
+        }
+
+        template <class MessageType, class = CheckMessage<MessageType>>
+        void Cast(MessageType& message) {
+            if (const auto[found, catalog, Id] = _Catalog->Search(typeid(MessageType)); found) {
+                message._CastInfo = std::make_pair(catalog, Id);
+                _Signals[Id].CastUnsafe<MessageType>(*this, message);
+            }
+        }
+
+        template <class MessageType, class = CheckMessage<MessageType>>
+        void Recast(MessageType& message) {
+            if (_Catalog->Check(message._CastInfo))
+                _Signals[message._CastInfo.second].template CastUnsafe<MessageType>(*this, message);
+            else
+                Cast(message);
+        }
+    private:
+        const EventCatalog* _Catalog;
+        std::unique_ptr<GenericSignal<Element>[]> _Signals;
+    };
+
     class Collection : public virtual Element {
 
     };
@@ -42,36 +147,30 @@ namespace Presentation::UI {
 
     };
 
-    class LayoutElement : public virtual Element {
+    struct LayoutUpdateEvent : MessageBase { };
+
+    class LayoutElement : public virtual EventNode {
     public:
         virtual void OnLayoutUpdate();
-
-        Signal<void(Element*)>& LayoutUpdate() noexcept { return _LayoutUpdate; }
-    private:
-        Signal<void(Element*)> _LayoutUpdate;
     };
 
     class LayoutCollection : public LayoutElement, public CollectionOver<LayoutElement> {
 
     };
 
-    class Renderable : public virtual Element {
+    struct BeforeRenderEvent : MessageBase { };
+
+    struct AfterRenderEvent : MessageBase { };
+
+    class Renderable : public virtual EventNode {
     public:
-        using RenderEvent = Signal<void(Element*)>;
-        
         virtual void Render();
 
         virtual void OnBeforeRender();
 
         virtual void OnAfterRender();
-
-        RenderEvent& BeforeRender() noexcept { return _PreRender; }
-
-        RenderEvent& AfterRender() noexcept { return _PostRender; }
     private:
         virtual void DoRender() = 0;
-
-        RenderEvent _PreRender, _PostRender;
     };
 
     class RenderableCollection : public Renderable, public CollectionOver<Renderable> {
@@ -82,18 +181,38 @@ namespace Presentation::UI {
 
     };
 
-    class UIResponder : public virtual Element {
+    struct TouchEvent : MessageBase { TouchInfo Info; };
+
+    struct TouchEnterEvent : TouchEvent { };
+
+    struct TouchLeaveEvent : TouchEvent { };
+
+    struct TouchDownEvent : TouchEvent { };
+
+    struct TouchMoveEvent : TouchEvent { };
+
+    struct TouchUpEvent : TouchEvent { };
+
+    struct KeyEvent : MessageBase { int Key = 0; };
+
+    struct KeyDownEvent : KeyEvent { };
+
+    struct KeyUpEvent : KeyEvent { };
+
+    struct KeyPressEvent : KeyEvent { };
+
+    struct FileDropEvent : MessageBase { filesystem::path File; };
+
+    struct FocusEvent : MessageBase { };
+
+    struct GainFocusEvent : FocusEvent { };
+
+    struct LoseFocusEvent : FocusEvent { };
+
+    struct TextInputEvent : MessageBase { const char* Text{}; };
+
+    class UIResponder : public virtual EventNode {
     public:
-        using TouchEvent = Signal<void(Element*, const TouchInfo&)>;
-
-        using KeyEvent = Signal<void(Element*, int)>;
-
-        using TextEvent = Signal<void(Element*, const char*)>;
-
-        using FocusEvent = Signal<void(Element*)>;
-
-        using FileDropEvent = Signal<void(Element*, filesystem::path)>;
-
         virtual void OnTouchEnter(const TouchInfo&);
 
         virtual void OnTouchLeave(const TouchInfo&);
@@ -117,40 +236,6 @@ namespace Presentation::UI {
         virtual void OnLoseFocus();
 
         virtual void OnDropFile(const filesystem::path& path);
-
-        TouchEvent& TouchEnter() noexcept { return _TouchEnter; }
-        
-        TouchEvent& TouchLeave() noexcept { return _TouchLeave; }
-        
-        TouchEvent& TouchDown() noexcept { return _TouchDown; }
-        
-        TouchEvent& TouchMove() noexcept { return _TouchMove; }
-        
-        TouchEvent& TouchUp() noexcept { return _TouchUp; }
-
-        KeyEvent& KeyDown() noexcept { return _KeyDown; }
-
-        KeyEvent& KeyUp() noexcept { return _KeyUp; }
-
-        KeyEvent& KeyPress() noexcept { return _KeyPress; }
-
-        TextEvent& TextInput() noexcept { return _TextInput; }
-
-        FocusEvent& GainFocus() noexcept { return _GainFocus; }
-
-        FocusEvent& LoseFocus() noexcept { return _LoseFocus; }
-
-        FileDropEvent& FileDrop() noexcept { return _FileDrop; }
-    private:
-        TouchEvent _TouchEnter, _TouchLeave, _TouchDown, _TouchMove, _TouchUp;
-
-        KeyEvent _KeyDown, _KeyUp, _KeyPress;
-
-        Signal<void(Element*, const char*)> _TextInput;
-
-        Signal<void(Element*)> _GainFocus, _LoseFocus;
-
-        Signal<void(Element*, filesystem::path)> _FileDrop;
     };
 
     class UIElement : public Renderable, public LayoutElement, public UIResponder {
@@ -159,20 +244,6 @@ namespace Presentation::UI {
 
     class UIContainerElement : public UIElement {
     public:
-        void OnLayoutUpdate() override;
-        void Render() override;
-        void OnTouchEnter(const TouchInfo& info) override;
-        void OnTouchLeave(const TouchInfo& info) override;
-        void OnTouchDown(const TouchInfo& info) override;
-        void OnTouchMove(const TouchInfo& info) override;
-        void OnTouchUp(const TouchInfo& info) override;
-        void OnKeyDown(int key) override;
-        void OnKeyUp(int key) override;
-        void OnKeyPress(int key) override;
-        void OnTextInput(const char* text) override;
-        void OnGainFocus() override;
-        void OnLoseFocus() override;
-        void OnDropFile(const filesystem::path& path) override;
     };
 
     class UICollectionElement : public RenderableCollection, public LayoutCollection, public UIResponder {

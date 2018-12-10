@@ -3,9 +3,40 @@
 //
 
 #include "Fundamentals.h"
+
 namespace Presentation::UI {
+    namespace {
+        auto Catalog0 = EventCatalog::Create<
+                // Layout Event
+                LayoutUpdateEvent,
+                // Render Events
+                BeforeRenderEvent,
+                AfterRenderEvent,
+                // UI Responder Events
+                TouchEnterEvent,
+                TouchLeaveEvent,
+                TouchDownEvent,
+                TouchMoveEvent,
+                TouchUpEvent,
+                KeyDownEvent,
+                KeyUpEvent,
+                KeyPressEvent,
+                FileDropEvent,
+                FocusEvent,
+                GainFocusEvent,
+                LoseFocusEvent,
+                TextInputEvent
+        >();
+    }
+
     Element::Element(const Element::Identifier& id)
             :_Id(id) { }
+
+    EventNode::EventNode(const EventCatalog& catalog)
+            :_Catalog(std::addressof(catalog)), _Signals(std::make_unique<GenericSignal<Element>[]>(catalog.Count())) {
+    }
+
+    EventNode::EventNode() : EventNode(Catalog0) { }
 
     void Renderable::Render() {
         OnBeforeRender();
@@ -13,89 +44,33 @@ namespace Presentation::UI {
         OnAfterRender();
     }
 
-    void Renderable::OnBeforeRender() { _PreRender(this); }
+    void Renderable::OnBeforeRender() { }
 
-    void Renderable::OnAfterRender() { _PreRender(this); }
+    void Renderable::OnAfterRender() { }
 
-    void LayoutElement::OnLayoutUpdate() { _LayoutUpdate(this); }
+    void LayoutElement::OnLayoutUpdate() { }
 
-    void UIResponder::OnTouchEnter(const TouchInfo& info) { _TouchEnter(this, info); }
+    void UIResponder::OnTouchEnter(const TouchInfo& info) { }
 
-    void UIResponder::OnTouchLeave(const TouchInfo& info) { _TouchLeave(this, info); }
+    void UIResponder::OnTouchLeave(const TouchInfo& info) { }
 
-    void UIResponder::OnTouchDown(const TouchInfo& info) { _TouchDown(this, info); }
+    void UIResponder::OnTouchDown(const TouchInfo& info) { }
 
-    void UIResponder::OnTouchMove(const TouchInfo& info) { _TouchMove(this, info); }
+    void UIResponder::OnTouchMove(const TouchInfo& info) { }
 
-    void UIResponder::OnTouchUp(const TouchInfo& info) { _TouchUp(this, info); }
+    void UIResponder::OnTouchUp(const TouchInfo& info) { }
 
-    void UIResponder::OnKeyDown(int key) { _KeyDown(this, key); }
+    void UIResponder::OnKeyDown(int key) { }
 
-    void UIResponder::OnKeyUp(int key) { _KeyUp(this, key); }
+    void UIResponder::OnKeyUp(int key) { }
 
-    void UIResponder::OnKeyPress(int key) { _KeyPress(this, key); }
+    void UIResponder::OnKeyPress(int key) { }
 
-    void UIResponder::OnTextInput(const char* text) { _TextInput(this, text); }
+    void UIResponder::OnTextInput(const char* text) { }
 
-    void UIResponder::OnGainFocus() { _GainFocus(this); }
+    void UIResponder::OnGainFocus() { }
 
-    void UIResponder::OnLoseFocus() { _LoseFocus(this); }
+    void UIResponder::OnLoseFocus() { }
 
-    void UIResponder::OnDropFile(const filesystem::path& path) { _FileDrop(this, path); }
-
-    void UIContainerElement::OnLayoutUpdate() {
-        LayoutElement::OnLayoutUpdate();
-    }
-
-    void UIContainerElement::Render() {
-        Renderable::Render();
-    }
-
-    void UIContainerElement::OnTouchEnter(const TouchInfo& info) {
-        UIResponder::OnTouchEnter(info);
-    }
-
-    void UIContainerElement::OnTouchLeave(const TouchInfo& info) {
-        UIResponder::OnTouchLeave(info);
-    }
-
-    void UIContainerElement::OnTouchDown(const TouchInfo& info) {
-        UIResponder::OnTouchDown(info);
-    }
-
-    void UIContainerElement::OnTouchMove(const TouchInfo& info) {
-        UIResponder::OnTouchMove(info);
-    }
-
-    void UIContainerElement::OnTouchUp(const TouchInfo& info) {
-        UIResponder::OnTouchUp(info);
-    }
-
-    void UIContainerElement::OnKeyDown(int key) {
-        UIResponder::OnKeyDown(key);
-    }
-
-    void UIContainerElement::OnKeyUp(int key) {
-        UIResponder::OnKeyUp(key);
-    }
-
-    void UIContainerElement::OnKeyPress(int key) {
-        UIResponder::OnKeyPress(key);
-    }
-
-    void UIContainerElement::OnTextInput(const char* text) {
-        UIResponder::OnTextInput(text);
-    }
-
-    void UIContainerElement::OnGainFocus() {
-        UIResponder::OnGainFocus();
-    }
-
-    void UIContainerElement::OnLoseFocus() {
-        UIResponder::OnLoseFocus();
-    }
-
-    void UIContainerElement::OnDropFile(const filesystem::path& path) {
-        UIResponder::OnDropFile(path);
-    }
+    void UIResponder::OnDropFile(const filesystem::path& path) { }
 }
