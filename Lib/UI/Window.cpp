@@ -53,13 +53,13 @@ namespace Presentation::UI {
 
     Point2D Window::GetPosition() noexcept {
         Point2D result{};
-        SDL_GetWindowPosition(W(_Handle), &result.x, &result.y);
+        SDL_GetWindowPosition(W(_Handle), &result.X, &result.Y);
         return result;
     }
 
     Point2D Window::GetSize() noexcept {
         Point2D result{};
-        SDL_GetWindowSize(W(_Handle), &result.x, &result.y);
+        SDL_GetWindowSize(W(_Handle), &result.X, &result.Y);
         return result;
     }
 
@@ -96,11 +96,11 @@ namespace Presentation::UI {
     }
 
     void Window::SetPosition(const Point2D& pt) noexcept {
-        SDL_SetWindowPosition(W(_Handle), pt.x, pt.y);
+        SDL_SetWindowPosition(W(_Handle), pt.X, pt.Y);
     }
 
     void Window::SetSize(const Point2D& size) noexcept {
-        SDL_SetWindowSize(W(_Handle), size.x, size.y);
+        SDL_SetWindowSize(W(_Handle), size.X, size.Y);
     }
 
     void Window::SetBordered(bool bordered) noexcept {

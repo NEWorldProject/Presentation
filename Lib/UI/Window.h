@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Common.h"
 #include "Fundamentals.h"
 #include <string>
 
 namespace Presentation::UI {
-    class Window : public LayoutElement, public Renderable, public UIResponder {
+    class Window : public LayoutElement, public Renderable, public Interactable {
     public:
         enum Position {
             Centered,                 /**< Centred On The Primary Display */
