@@ -801,7 +801,13 @@ private:
     }
 };
 
+#include "UI/Fundamentals.h"
+
 int main() {
+    std::cout << sizeof(Presentation::UI::UIElement) << std::endl;
+}
+
+/*int main() {
     HelloTriangleApplication app;
 
     try {
@@ -812,4 +818,4 @@ int main() {
     }
 
     return EXIT_SUCCESS;
-}
+}*/

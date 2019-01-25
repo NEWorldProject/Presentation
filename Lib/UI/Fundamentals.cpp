@@ -29,10 +29,5 @@ namespace Presentation::UI {
         >();
     }
 
-
-
-
-
-
-
+    EventCatalog& EventCatalog::GetDefault() noexcept { return Catalog0; }
 }

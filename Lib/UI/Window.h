@@ -4,7 +4,7 @@
 #include <string>
 
 namespace Presentation::UI {
-    class Window : public LayoutElement, public Renderable, public Interactable {
+    class Window : public BasicLayoutable, public Renderable, public Interactable {
     public:
         enum Position {
             Centered,                 /**< Centred On The Primary Display */
@@ -34,9 +34,9 @@ namespace Presentation::UI {
             CreatePopupMenu = 1 << 17,          /**< window should be treated as a popup menu */
         };
 
-        Window() noexcept : _Handle(nullptr) {}
+        Window() noexcept : EventNode(EventCatalog::GetDefault()), _Handle(nullptr) {}
         
-        Window(const std::string& name, const Rect& rect, uint32_t flags);
+        Window(const std::string& name, const AARect& rect, uint32_t flags);
 
         ~Window() noexcept;
 

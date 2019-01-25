@@ -1,7 +1,9 @@
 #include "Events.h"
 
 namespace Presentation::UI {
-    namespace { std::mutex UILock; }
+    namespace {
+        std::mutex UILock;
+    }
 
     EventNode::EventNode(const EventCatalog& catalog)
             :_Catalog(std::addressof(catalog)),

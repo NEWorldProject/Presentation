@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Math/Rect.h>
+#include <Math/AARect.h>
 #include <Math/Vector.h>
 #include <task/spin_lock.h>
 #include <Core/Delegate.h>
@@ -14,7 +14,7 @@ namespace Presentation {
     using Math::Vec3I;
     using Math::Vec3F;
     using Math::Vec3D;
-    using Math::Rect;
+    using Math::AARect;
     using Point2D = Vec2I;
     using Point3D = Vec3I;
 }

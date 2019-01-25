@@ -51,6 +51,8 @@ namespace Presentation::UI {
                 return info.first==_CheckTable[info.second];
             return false;
         }
+
+        static EventCatalog& GetDefault() noexcept;
     private:
         struct Hash {
             std::size_t operator()(TypeInfoRef code) const noexcept {

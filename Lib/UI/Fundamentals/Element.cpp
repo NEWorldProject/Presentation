@@ -13,7 +13,8 @@ namespace Presentation::UI {
         // since we cannot automatically wire up all these functions by inheritance statically
 
         struct ChainBlock {
-            ChainBlock(const std::type_index& idx, intptr_t offset) noexcept: Index(idx), Offset(offset) {}
+            ChainBlock(const std::type_index& idx, intptr_t offset) noexcept
+                    :Index(idx), Offset(offset) { }
 
             std::type_index Index;
             // This will be the offset to TreeNode type, which will have a virtual function to do further wiring
@@ -66,7 +67,6 @@ namespace Presentation::UI {
     EventNode* const Element::GetEventNode() const noexcept { return nullptr; }
 
     void Element::AddChildBase(Element* element) noexcept {
-        element->_Parent = this;
         // Hook Up All Tree Nodes
         auto reg_this = reinterpret_cast<TypeRegistry*>(GetTypeInfo());
         auto reg_target = reinterpret_cast<TypeRegistry*>(element->GetTypeInfo());
@@ -76,15 +76,28 @@ namespace Presentation::UI {
         for (; _this!=reg_this->Blocks.end(); ++_this) {
             for (; *_other<*_this; ++_other);
             if (*_other==*_this) {
-                auto _this_node = reinterpret_cast<TreeNode*>(GetCurrentAddress()+_this->Offset);
-                _this_node->AddChildPartial(element, element->GetCurrentAddress()+_other->Offset);
+                auto _this_node = reinterpret_cast<TreeNode*>(GetBaseAddress()+_this->Offset);
+                _this_node->AddChildPartial(element, reinterpret_cast<TreeNode*>(element->GetBaseAddress()+_other->Offset));
             }
         }
     }
 
-    TreeNode::TreeNode(const std::type_index& index) {
-        auto reg = reinterpret_cast<TypeRegistry*>(GetTypeInfo());
-        if (!reg->Lock)
+    TreeNode::TreeNode(const std::type_index& index, intptr_t ptr)
+            :_Parent(nullptr), _Left(nullptr), _Right(nullptr), _CBegin(nullptr), _CLast(nullptr), _Class(ptr) {
+        if (auto reg = reinterpret_cast<TypeRegistry*>(GetTypeInfo()); !reg->Lock)
             reg->Blocks.emplace_back(index, ComputeOffset(reinterpret_cast<intptr_t>(this)));
     }
+
+    void TreeNode::AddChildPartial(Element* element, TreeNode* target_node) noexcept {
+        if (_CBegin == nullptr) {
+            _CBegin = _CLast = target_node;
+        }
+        else {
+            _CLast->_Right = target_node;
+            target_node->_Left = _CLast;
+            _CLast = target_node;
+        }
+        target_node->_Parent = this;
+    }
+
 }

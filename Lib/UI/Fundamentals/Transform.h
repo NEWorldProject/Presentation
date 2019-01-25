@@ -3,6 +3,7 @@
 #include <vector>
 #include <Math/Matrix.h>
 #include <Core/Intrusive.h>
+#include "Element.h"
 
 namespace Presentation::UI {
     struct TransformBase : IntrusiveVTBase {
@@ -14,8 +15,13 @@ namespace Presentation::UI {
         virtual void CacheFlush() noexcept;
     private:
         friend class Transforms;
+        friend class TransformHolder;
         void SetParent(TransformBase& parent) noexcept;
         TransformBase* _Parent = nullptr;
+    };
+
+    struct TransformHolder: TransformBase {
+        void Content(TransformBase& child) noexcept;
     };
 
     class Transforms : public TransformBase {
@@ -89,4 +95,6 @@ namespace Presentation::UI {
     private:
         Math::Vec3D _Scale;
     };
+
+    class Transformable : virtual public Element, protected Transforms { };
 }

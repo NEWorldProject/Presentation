@@ -128,4 +128,6 @@ namespace Presentation::UI {
                 0.0, 0.0, 0.0, 1.0
         );
     }
+
+    void TransformHolder::Content(TransformBase& child) noexcept { child.SetParent(*this); }
 }

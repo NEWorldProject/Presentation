@@ -113,32 +113,6 @@ void glDrawBuffers(GLsizei n, const GLenum *bufs) noexcept;
 void glStencilOpSeparate(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass) noexcept;
 void glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask) noexcept;
 void glStencilMaskSeparate(GLenum face, GLuint mask) noexcept;
-void glAttachShader(GLuint program, GLuint shader) noexcept;
-void glBindAttribLocation(GLuint program, GLuint index, const GLchar *name) noexcept;
-void glCompileShader(GLuint shader) noexcept;
-GLuint glCreateProgram() noexcept;
-GLuint glCreateShader(GLenum type) noexcept;
-void glDeleteProgram(GLuint program) noexcept;
-void glDeleteShader(GLuint shader) noexcept;
-void glDetachShader(GLuint program, GLuint shader) noexcept;
-void glDisableVertexAttribArray(GLuint index) noexcept;
-void glEnableVertexAttribArray(GLuint index) noexcept;
-void glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name) noexcept;
-void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name) noexcept;
-void glGetAttachedShaders(GLuint program, GLsizei maxCount, GLsizei *count, GLuint *shaders) noexcept;
-GLint glGetAttribLocation(GLuint program, const GLchar *name) noexcept;
-void glGetProgramiv(GLuint program, GLenum pName, GLint *params) noexcept;
-void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) noexcept;
-void glGetShaderiv(GLuint shader, GLenum pName, GLint *params) noexcept;
-void glGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog) noexcept;
-void glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source) noexcept;
-GLint glGetUniformLocation(GLuint program, const GLchar *name) noexcept;
-GLboolean glIsProgram(GLuint program) noexcept;
-GLboolean glIsShader(GLuint shader) noexcept;
-void glLinkProgram(GLuint program) noexcept;
-void glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length) noexcept;
-void glUseProgram(GLuint program) noexcept;
-void glValidateProgram(GLuint program) noexcept;
 #endif /* GL_VERSION_2_0 */
 
 #ifdef GL_VERSION_3_0
@@ -186,9 +160,6 @@ void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint
 void glRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height) noexcept;
 void glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer) noexcept;
 void glBindVertexArray(GLuint array) noexcept;
-void glDeleteVertexArrays(GLsizei n, const GLuint *arrays) noexcept;
-void glGenVertexArrays(GLsizei n, GLuint *arrays) noexcept;
-GLboolean glIsVertexArray(GLuint array) noexcept;
 #endif /* GL_VERSION_3_0 */
 
 #ifdef GL_VERSION_3_1
@@ -266,7 +237,6 @@ void glGetActiveSubroutineUniformName(GLuint program, GLenum shadertype, GLuint 
 void glGetActiveSubroutineName(GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize, GLsizei *length, GLchar *name) noexcept;
 void glUniformSubroutinesuiv(GLenum shadertype, GLsizei count, const GLuint *indices) noexcept;
 void glGetUniformSubroutineuiv(GLenum shadertype, GLint location, GLuint *params) noexcept;
-void glGetProgramStageiv(GLuint program, GLenum shadertype, GLenum pName, GLint *values) noexcept;
 void glPatchParameteri(GLenum pName, GLint value) noexcept;
 void glPatchParameterfv(GLenum pName, const GLfloat *values) noexcept;
 void glBindTransformFeedback(GLenum target, GLuint id) noexcept;
@@ -283,24 +253,8 @@ void glGetQueryIndexediv(GLenum target, GLuint index, GLenum pName, GLint *param
 #endif /* GL_VERSION_4_0 */
 
 #ifdef GL_VERSION_4_1
-void glReleaseShaderCompiler() noexcept;
-void glShaderBinary(GLsizei count, const GLuint *shaders, GLenum binaryformat, const void *binary, GLsizei length) noexcept;
-void glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint *range, GLint *precision) noexcept;
 void glDepthRangef(GLfloat n, GLfloat f) noexcept;
 void glClearDepthf(GLfloat d) noexcept;
-void glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, void *binary) noexcept;
-void glProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLsizei length) noexcept;
-void glProgramParameteri(GLuint program, GLenum pName, GLint value) noexcept;
-void glUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program) noexcept;
-void glActiveShaderProgram(GLuint pipeline, GLuint program) noexcept;
-GLuint glCreateShaderProgramv(GLenum type, GLsizei count, const GLchar *const*strings) noexcept;
-void glBindProgramPipeline(GLuint pipeline) noexcept;
-void glDeleteProgramPipelines(GLsizei n, const GLuint *pipelines) noexcept;
-void glGenProgramPipelines(GLsizei n, GLuint *pipelines) noexcept;
-GLboolean glIsProgramPipeline(GLuint pipeline) noexcept;
-void glGetProgramPipelineiv(GLuint pipeline, GLenum pName, GLint *params) noexcept;
-void glValidateProgramPipeline(GLuint pipeline) noexcept;
-void glGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog) noexcept;
 void glViewportArrayv(GLuint first, GLsizei count, const GLfloat *v) noexcept;
 void glViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h) noexcept;
 void glViewportIndexedfv(GLuint index, const GLfloat *v) noexcept;
@@ -350,12 +304,6 @@ void glTexBufferRange(GLenum target, GLenum internalFormat, GLuint buffer, GLint
 void glTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations) noexcept;
 void glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations) noexcept;
 void glTextureView(GLuint texture, GLenum target, GLuint origtexture, GLenum internalFormat, GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers) noexcept;
-void glBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride) noexcept;
-void glVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset) noexcept;
-void glVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset) noexcept;
-void glVertexAttribLFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset) noexcept;
-void glVertexAttribBinding(GLuint attribindex, GLuint bindingindex) noexcept;
-void glVertexBindingDivisor(GLuint bindingindex, GLuint divisor) noexcept;
 void glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled) noexcept;
 void glDebugMessageInsert(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf) noexcept;
 void glDebugMessageCallback(GLDEBUGPROC callback, const void *userParam) noexcept;
@@ -376,7 +324,6 @@ void glBindBuffersRange(GLenum target, GLuint first, GLsizei count, const GLuint
 void glBindTextures(GLuint first, GLsizei count, const GLuint *textures) noexcept;
 void glBindSamplers(GLuint first, GLsizei count, const GLuint *samplers) noexcept;
 void glBindImageTextures(GLuint first, GLsizei count, const GLuint *textures) noexcept;
-void glBindVertexBuffers(GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizei *strides) noexcept;
 #endif /* GL_VERSION_4_4 */
 
 #ifdef GL_VERSION_4_5
@@ -442,22 +389,7 @@ void glGetTextureParameterfv(GLuint texture, GLenum pName, GLfloat *params) noex
 void glGetTextureParameterIiv(GLuint texture, GLenum pName, GLint *params) noexcept;
 void glGetTextureParameterIuiv(GLuint texture, GLenum pName, GLuint *params) noexcept;
 void glGetTextureParameteriv(GLuint texture, GLenum pName, GLint *params) noexcept;
-void glCreateVertexArrays(GLsizei n, GLuint *arrays) noexcept;
-void glDisableVertexArrayAttrib(GLuint vaobj, GLuint index) noexcept;
-void glEnableVertexArrayAttrib(GLuint vaobj, GLuint index) noexcept;
-void glVertexArrayElementBuffer(GLuint vaobj, GLuint buffer) noexcept;
-void glVertexArrayVertexBuffer(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride) noexcept;
-void glVertexArrayVertexBuffers(GLuint vaobj, GLuint first, GLsizei count, const GLuint *buffers, const GLintptr *offsets, const GLsizei *strides) noexcept;
-void glVertexArrayAttribBinding(GLuint vaobj, GLuint attribindex, GLuint bindingindex) noexcept;
-void glVertexArrayAttribFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset) noexcept;
-void glVertexArrayAttribIFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset) noexcept;
-void glVertexArrayAttribLFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset) noexcept;
-void glVertexArrayBindingDivisor(GLuint vaobj, GLuint bindingindex, GLuint divisor) noexcept;
-void glGetVertexArrayiv(GLuint vaobj, GLenum pName, GLint *param) noexcept;
-void glGetVertexArrayIndexediv(GLuint vaobj, GLuint index, GLenum pName, GLint *param) noexcept;
-void glGetVertexArrayIndexed64iv(GLuint vaobj, GLuint index, GLenum pName, GLint64 *param) noexcept;
 void glCreateSamplers(GLsizei n, GLuint *samplers) noexcept;
-void glCreateProgramPipelines(GLsizei n, GLuint *pipelines) noexcept;
 void glCreateQueries(GLenum target, GLsizei n, GLuint *ids) noexcept;
 void glGetQueryBufferObjecti64v(GLuint id, GLuint buffer, GLenum pName, GLintptr offset) noexcept;
 void glGetQueryBufferObjectiv(GLuint id, GLuint buffer, GLenum pName, GLintptr offset) noexcept;
@@ -482,6 +414,7 @@ void glPolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp) noexcept
 
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 namespace GL {
     class Context {
@@ -540,8 +473,8 @@ namespace GL {
         void Storage(GLsizeiptr size, const void *data, GLbitfield flags) noexcept;
         void SubData(GLintptr offset, GLsizeiptr size, const void *data) noexcept;
         static void CopySubData(Buffer& read, Buffer& write, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size) noexcept;
-        void ClearData(GLenum internalFormat, GLenum format, GLenum type, const void *data) noexcept;
-        void ClearSubData(GLenum internalFormat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data) noexcept;
+        void ClearDataMGLV(GLuint unitSize, const void* data) noexcept;
+        void ClearSubDataMGLV(GLuint unitSize, GLintptr offset, GLsizeiptr size, const void* data) noexcept;
         void ZeroDataMGLV() noexcept;
         void ZeroSubDataMGLV(GLintptr offset, GLsizeiptr size) noexcept;
         void * Map(GLenum access) noexcept;
@@ -552,6 +485,37 @@ namespace GL {
         VkBuffer _Buffer { VK_NULL_HANDLE };
         VkDeviceMemory _Memory { VK_NULL_HANDLE };
     };
+
+    class Shader {
+    public:
+        
+    private:
+    };
+
+    class Program {
+
+    };
+
+    class Pipeline {
+    public:
+        void Create() noexcept;
+        void Delete() noexcept;
+        void CompileMGLV() noexcept;
+        void ElementBuffer(GLuint buffer) noexcept;
+        void VertexBufferMGLV(GLuint bindingIndex, Buffer& buffer) noexcept;
+        void VertexBuffersMGLV(GLuint first, GLsizei count, const Buffer* buffers) noexcept;
+        void AddVertexBindingMGLV(GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept;
+        void AddAttribFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLboolean normalized, GLuint offset) noexcept;
+        void AddAttribIFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+        void AddAttribLFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+        void BindingDivisor(GLuint bindingIndex, GLuint divisor) noexcept;
+    private:
+        VkVertexInputAttributeDescription& _LocateAttrib(GLuint index) noexcept;
+        std::pair<VkVertexInputBindingDescription&, VkBuffer*&> _LocateBinding(GLuint index) noexcept;
+        std::vector<VkBuffer*> _Binds;
+        std::vector<VkVertexInputAttributeDescription> _Attribs;
+        std::vector<VkVertexInputBindingDescription> _Bindings;
+    };
 }
 
 // Begin Buffer
@@ -560,8 +524,8 @@ void glDeleteBuffers(GLsizei n, const GLuint *buffers) noexcept;
 void glNamedBufferStorage(GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags) noexcept;
 void glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data) noexcept;
 void glCopyNamedBufferSubData(GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size) noexcept;
-void glClearNamedBufferData(GLuint buffer, GLenum internalFormat, GLenum format, GLenum type, const void *data) noexcept;
-void glClearNamedBufferSubData(GLuint buffer, GLenum internalFormat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data) noexcept;
+void glClearNamedBufferDataMGLV(GLuint buffer, GLuint unitSize, const void* data) noexcept;
+void glClearNamedBufferSubDataMGLV(GLuint buffer, GLuint unitSize, GLintptr offset, GLsizeiptr size, const void* data) noexcept;
 void glZeroNamedBufferDataMGLV(GLuint buffer) noexcept;
 void glZeroNamedBufferSubDataMLGV(GLuint buffer, GLintptr offset, GLsizeiptr size) noexcept;
 void * glMapNamedBuffer(GLuint buffer, GLenum access) noexcept;
@@ -569,5 +533,29 @@ void * glMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, 
 GLboolean glUnmapNamedBuffer(GLuint buffer) noexcept;
 void glFlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length) noexcept;
 // End Buffer
+
+// Begin Shader
+void glAttachShader(GLuint program, GLuint shader) noexcept;
+GLuint glCreateProgram() noexcept;
+GLuint glCreateShader(GLenum type) noexcept;
+void glDeleteProgram(GLuint program) noexcept;
+void glDeleteShader(GLuint shader) noexcept;
+void glDetachShader(GLuint program, GLuint shader) noexcept;
+void glShaderBinary(GLsizei count, const GLuint *shaders, GLenum binaryformat, const void *binary, GLsizei length) noexcept;
+// End Shader
+
+// Begin Pipeline
+void glCreatePipelinesMGLV(GLsizei n, GLuint *pipelines) noexcept;
+void glDeletePipelinesMGLV(GLsizei n, const GLuint* pipelines) noexcept;
+void glPipelineCompileMGLV(GLuint pipeline) noexcept;
+void glPipelineElementBufferMGLV(GLuint pipeline, GLuint buffer) noexcept;
+void glPipelineVertexBufferMGLV(GLuint pipeline, GLuint bindingIndex, GLuint buffer) noexcept;
+void glPipelineVertexBuffersMGLV(GLuint pipeline, GLuint first, GLsizei count, const GLuint* buffers) noexcept;
+void glPipelineAddVertexBindingMGLV(GLuint pipeline, GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept;
+void glPipelineAddAttribFormatMGLV(GLuint pipeline, GLuint index, GLuint binding, GLint size, GLenum type, GLboolean normalized, GLuint offset) noexcept;
+void glPipelineAddAttribIFormatMGLV(GLuint pipeline, GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+void glPipelineAddAttribLFormatMGLV(GLuint pipeline, GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+void glPipelineBindingDivisorMGLV(GLuint pipeline, GLuint bindingIndex, GLuint divisor) noexcept;
+// End Pipeline
 
 #pragma clang diagnostic pop

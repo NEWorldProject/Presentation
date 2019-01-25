@@ -43,8 +43,8 @@ namespace Presentation::UI {
         }
     }
 
-    Window::Window(const std::string& name, const Rect& rect, uint32_t flags)
-            :
+    Window::Window(const std::string& name, const AARect& rect, uint32_t flags):
+            EventNode(EventCatalog::GetDefault()),
             _Handle(SDL_CreateWindow(name.c_str(), CWP(rect.Left), CWP(rect.Top), rect.Width, rect.Height,
                     CFLG(flags))) {
         if (!_Handle)

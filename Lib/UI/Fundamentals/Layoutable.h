@@ -3,16 +3,16 @@
 #include <array>
 #include "Element.h"
 #include "Events.h"
-#include "Math/Rect.h"
+#include "Math/AARect.h"
 #include "Transform.h"
 
 namespace Presentation::UI {
     enum class Anchor : int32_t {
-        Left, Right, Top, Bottom
+        Left = 0, Right = 1, Top = 2, Bottom = 3
     };
 
     enum class AnchorType {
-        Center, Align, Opposite
+        None = 0, Center = 1, Align = 2, Opposite = 3
     };
 
     struct Margin {
@@ -21,27 +21,55 @@ namespace Presentation::UI {
 
     struct LayoutUpdateEvent : MessageBase { };
 
-    class Layoutable : public virtual Element, protected TransformBase {
+    struct CircularReferenceException : std::exception {
+        const char* what() const noexcept override;
+    };
+
+    class BasicLayoutable : public TreeNode {
     public:
-        Layoutable();
+        BasicLayoutable();
 
-        void SetAnchor(Anchor anchor, AnchorType type, Layoutable& sibling) noexcept;
+        void SetAnchor(Anchor anchor, AnchorType type, BasicLayoutable& sibling) noexcept;
 
-        const std::pair<AnchorType, Layoutable*> GetAnchor(Anchor anchor) const noexcept;
+        const std::pair<AnchorType, BasicLayoutable*> GetAnchor(Anchor anchor) const noexcept;
 
         void SetMargin(const Margin& margin) noexcept;
 
         Margin GetMargin() const noexcept;
 
-        virtual Math::Rect Measure() const noexcept;
+        virtual Math::AARect GetCurrentMinRect() const noexcept;
+
+        virtual Math::AARect Measure();
+
+        virtual Math::AARect Organize(const Math::AARect& available);
+    protected:
+        void MarkForLayoutUpdate();
+
+        virtual void OnLayoutUpdate();
+
+        void AddChildPartial(Element* element, TreeNode* newNode) noexcept override;
+    private:
+        // Procedural variables
+        bool _In, _Out, _Dump;
+        Math::AARect _Resolved;
+        // Properties
+        Margin _Margin;
+        std::array<std::pair<AnchorType, BasicLayoutable*>, 4> _Anchors;
+    };
+
+    class TransformableLayoutable : public BasicLayoutable, virtual public Transformable, protected TransformHolder {
+    public:
+        TransformableLayoutable();
+
+        Transforms& LayoutTransforms() noexcept { return _Transforms; }
+
+        Math::AARect Measure() override;
+
+        Math::AARect Organize(const Math::AARect& available) override;
     protected:
         void CacheFlush() noexcept override;
-        virtual void OnLayoutUpdate();
     private:
-        Margin _Margin { 0, 0, 0, 0 };
         Transforms _Transforms;
-        std::array<std::pair<AnchorType, Layoutable*>, 4> _Anchors;
-        void MarkForLayoutUpdate();
     };
 
 }

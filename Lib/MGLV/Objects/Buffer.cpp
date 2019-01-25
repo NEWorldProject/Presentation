@@ -1,5 +1,5 @@
-#include "../Functions.h"
 #include <limits>
+#include <MGLV/Functions.h>
 
 namespace GL {
     namespace D {
@@ -118,86 +118,6 @@ namespace GL {
     }
 
     namespace {
-        auto TypeMatch(GLenum internalFormat, GLenum format, GLenum type) noexcept {
-            #define C(fmt, t) return (format == fmt) && (type == t);
-            switch (internalFormat) {
-            case GL_R8: C(GL_RED, GL_UNSIGNED_BYTE)
-            case GL_R16: C(GL_RED, GL_UNSIGNED_SHORT)
-            case GL_R16F: C(GL_RED, GL_HALF_FLOAT)
-            case GL_R32F: C(GL_RED, GL_FLOAT)
-            case GL_R8I: C(GL_RED, GL_BYTE)
-            case GL_R16I: C(GL_RED, GL_SHORT)
-            case GL_R32I: C(GL_RED, GL_INT)
-            case GL_R8UI: C(GL_RED, GL_UNSIGNED_BYTE)
-            case GL_R16UI: C(GL_RED, GL_UNSIGNED_SHORT)
-            case GL_R32UI: C(GL_RED, GL_UNSIGNED_INT)
-            case GL_RG8: C(GL_RG, GL_UNSIGNED_BYTE)
-            case GL_RG16: C(GL_RG, GL_UNSIGNED_SHORT)
-            case GL_RG16F: C(GL_RG, GL_HALF_FLOAT)
-            case GL_RG8I: C(GL_RG, GL_BYTE)
-            case GL_RG16I: C(GL_RG, GL_SHORT)
-            case GL_RG8UI: C(GL_RG, GL_UNSIGNED_BYTE)
-            case GL_RG16UI: C(GL_RG, GL_UNSIGNED_SHORT)
-            case GL_RGBA8: C(GL_RGBA, GL_UNSIGNED_BYTE)
-            case GL_RGBA8I:C(GL_RGBA, GL_BYTE)
-            case GL_RGBA8UI: C(GL_RGBA, GL_UNSIGNED_BYTE)
-            default:return false;
-            }
-            #undef C
-        }
-
-        auto GetUnitSize(GLenum internalFormat) noexcept {
-            switch (internalFormat) {
-            case GL_R8: return 1;
-            case GL_R16: return 2;
-            case GL_R16F: return 2;
-            case GL_R32F: return 4;
-            case GL_R8I: return 1;
-            case GL_R16I: return 2;
-            case GL_R32I: return 4;
-            case GL_R8UI: return 1;
-            case GL_R16UI: return 2;
-            case GL_R32UI: return 4;
-            case GL_RG8: return 2;
-            case GL_RG16: return 4;
-            case GL_RG16F: return 4;
-            case GL_RG8I: return 2;
-            case GL_RG16I: return 4;
-            case GL_RG8UI: return 2;
-            case GL_RG16UI: return 4;
-            case GL_RGBA8: return 4;
-            case GL_RGBA8I: return 4;
-            case GL_RGBA8UI: return 4;
-            default:return -1;
-            }
-        }
-
-        uint32_t GetUnitAlign(GLenum internalFormat) noexcept {
-            switch (internalFormat) {
-            case GL_R8: return 1;
-            case GL_R16: return 2;
-            case GL_R16F: return 2;
-            case GL_R32F: return 4;
-            case GL_R8I: return 1;
-            case GL_R16I: return 2;
-            case GL_R32I: return 4;
-            case GL_R8UI: return 1;
-            case GL_R16UI: return 2;
-            case GL_R32UI: return 4;
-            case GL_RG8: return 1;
-            case GL_RG16: return 2;
-            case GL_RG16F: return 2;
-            case GL_RG8I: return 1;
-            case GL_RG16I: return 2;
-            case GL_RG8UI: return 1;
-            case GL_RG16UI: return 2;
-            case GL_RGBA8: return 1;
-            case GL_RGBA8I: return 1;
-            case GL_RGBA8UI: return 1;
-            default:return std::numeric_limits<uint32_t>::max();
-            }
-        }
-
         void SegmentFill4(VkBuffer buffer, GLintptr offset, GLsizeiptr size, uint32_t data) noexcept {
             if (size)
                 vkCmdFillBuffer(D::_Context->GetCommandBuffer(), buffer, static_cast<VkDeviceSize>(offset), size, data);
@@ -239,61 +159,55 @@ namespace GL {
         }
     }
 
-    void Buffer::ClearSubData(GLenum internalFormat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type,
-            const void* data) noexcept {
-        if (auto a = GetUnitAlign(internalFormat); (offset%a) || (size%a) || !TypeMatch(internalFormat, format, type)) {
-            D::_Context->SetError(a==std::numeric_limits<uint32_t>::max() ? GL_INVALID_ENUM : GL_INVALID_VALUE);
+    void Buffer::ClearSubDataMGLV(GLuint unitSize, GLintptr offset, GLsizeiptr size, const void* data) noexcept {
+        if (offset<0 || size<0) {
+            D::_Context->SetError(GL_INVALID_VALUE);
+            return;
+        }
+        if ((offset%unitSize) || (size%unitSize)) {
+            D::_Context->SetError(GL_INVALID_VALUE);
             return;
         }
         if (!data) {
             ZeroSubDataMGLV(offset, size);
         }
         else {
-            if (offset<0 || size<0) {
-                D::_Context->SetError(GL_INVALID_VALUE);
-                return;
-            }
-            if (TypeMatch(internalFormat, format, type)) {
-                const auto* buffer = reinterpret_cast<const uint32_t*>(data);
-                const auto unitSize = GetUnitSize(internalFormat);
-                if (unitSize==4)
-                    SegmentFill4(_Buffer, offset, size, buffer[0]);
-                else if (unitSize==2)
-                    SegmentFill2(_Buffer, offset, size, *reinterpret_cast<const uint16_t*>(buffer));
-                else if (unitSize==1)
-                    SegmentFill1(_Buffer, offset, size, *reinterpret_cast<const uint8_t*>(buffer));
-            }
-            else {
-                D::_Context->SetError(GL_INVALID_ENUM);
-            }
+            switch (unitSize) {
+            case 4:SegmentFill4(_Buffer, offset, size, *reinterpret_cast<const uint32_t*>(data));
+                break;
+            case 2:SegmentFill2(_Buffer, offset, size, *reinterpret_cast<const uint16_t*>(data));
+                break;
+            case 1:SegmentFill1(_Buffer, offset, size, *reinterpret_cast<const uint8_t*>(data));
+                break;
+            default:D::_Context->SetError(GL_INVALID_ENUM);
+            };
         }
     }
 
-    void Buffer::ClearData(GLenum internalFormat, GLenum format, GLenum type, const void* data) noexcept {
+    void Buffer::ClearDataMGLV(GLuint unitSize, const void* data) noexcept {
         if (!data) {
             ZeroDataMGLV();
         }
         else {
-            if (TypeMatch(internalFormat, format, type)) {
-                const auto* buffer = reinterpret_cast<const uint32_t*>(data);
-                const auto unitSize = GetUnitSize(internalFormat);
-                if (unitSize==4) {
-                    const auto val = buffer[0];
-                    vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
-                }
-                else if (unitSize==2) {
-                    const auto dt = *reinterpret_cast<const uint16_t*>(buffer);
-                    const auto val = dt << 16 | dt;
-                    vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
-                }
-                else if (unitSize==1) {
-                    const auto dt = *reinterpret_cast<const uint8_t*>(buffer);
-                    const auto val = dt << 24 | dt << 16 | dt << 8 | dt;
-                    vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
-                }
+            switch (unitSize) {
+            case 4: {
+                const auto val = *reinterpret_cast<const uint32_t*>(data);
+                vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
+                return;
             }
-            else {
-                D::_Context->SetError(GL_INVALID_ENUM);
+            case 2: {
+                const auto dt = *reinterpret_cast<const uint16_t*>(data);
+                const auto val = dt << 16 | dt;
+                vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
+                return;
+            }
+            case 1: {
+                const auto dt = *reinterpret_cast<const uint8_t*>(data);
+                const auto val = dt << 24 | dt << 16 | dt << 8 | dt;
+                vkCmdFillBuffer(D::_Context->GetCommandBuffer(), _Buffer, 0, VK_WHOLE_SIZE, val);
+                return;
+            }
+            default:D::_Context->SetError(GL_INVALID_ENUM);
             }
         }
     }
@@ -318,4 +232,65 @@ namespace GL {
         vkFlushMappedMemoryRanges(D::_Context->GetDevice(), 1, &range);
     }
 
+}
+
+void glCreateBuffers(GLsizei n, GLuint *buffers) noexcept {
+    for (GLsizei i = 0; i < n; ++i) {
+        auto obj = new GL::Buffer();
+        obj->Create();
+        buffers[i] = reinterpret_cast<GLuint>(obj);
+    }
+}
+
+void glDeleteBuffers(GLsizei n, const GLuint *buffers) noexcept{
+    for (GLsizei i = 0; i < n; ++i) {
+        auto obj = reinterpret_cast<GL::Buffer*>(buffers[i]);
+        obj->Delete();
+        delete obj;
+    }
+}
+
+void glNamedBufferStorage(GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->Storage(size, data, flags);
+}
+
+void glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->SubData(offset, size, data);
+}
+
+void glCopyNamedBufferSubData(GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size) noexcept {
+    GL::Buffer::CopySubData(*reinterpret_cast<GL::Buffer*>(readBuffer), *reinterpret_cast<GL::Buffer*>(writeBuffer),
+            readBuffer, writeBuffer, size);
+}
+
+void glClearNamedBufferDataMGLV(GLuint buffer, GLuint unitSize, const void* data) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->ClearDataMGLV(unitSize, data);
+}
+
+void glClearNamedBufferSubDataMGLV(GLuint buffer, GLuint unitSize, GLintptr offset, GLsizeiptr size, const void* data) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->ClearSubDataMGLV(unitSize, offset, size, data);
+}
+
+void glZeroNamedBufferDataMGLV(GLuint buffer) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->ZeroDataMGLV();
+}
+
+void glZeroNamedBufferSubDataMGLV(GLuint buffer, GLintptr offset, GLsizeiptr size) noexcept{
+    reinterpret_cast<GL::Buffer*>(buffer)->ZeroSubDataMGLV(offset, size);
+}
+
+void * glMapNamedBuffer(GLuint buffer, GLenum access) noexcept {
+    return reinterpret_cast<GL::Buffer*>(buffer)->Map(access);
+}
+
+void * glMapNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access) noexcept {
+    return reinterpret_cast<GL::Buffer*>(buffer)->MapRange(offset, length, access);
+}
+
+GLboolean glUnmapNamedBuffer(GLuint buffer) noexcept {
+    return reinterpret_cast<GL::Buffer*>(buffer)->Unmap();
+}
+
+void glFlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr length) noexcept {
+    reinterpret_cast<GL::Buffer*>(buffer)->FlushMappedRange(offset, length);
 }
