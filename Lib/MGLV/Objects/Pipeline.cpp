@@ -6,16 +6,22 @@ namespace GL {
         extern thread_local Context* _Context;
     }
 
-    void Pipeline::Create() noexcept { }
+    void Pipeline::Create() noexcept {
+		_CreateInfo = new CreateInfo();
+    }
 
     void Pipeline::Delete() noexcept {
-        _Attribs.clear();
-        _Bindings.clear();
+		delete _CreateInfo;
         _Binds.clear();
     }
 
     void Pipeline::CompileMGLV() noexcept {
+		// Success
+		_CreateInfo = nullptr;
+    }
 
+    void Pipeline::AttachProgram(const Program& program) noexcept {
+		_CreateInfo->_Program = std::addressof(program);
     }
 
     void Pipeline::VertexBufferMGLV(GLuint bindingIndex, Buffer& buffer) noexcept {
@@ -25,7 +31,7 @@ namespace GL {
     }
 
     void Pipeline::AddVertexBindingMGLV(GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept {
-        auto&&[binding, bind] = _LocateBinding(index);
+        auto& binding = _LocateBinding(index);
         binding.stride = static_cast<uint32_t>(stride);
         binding.inputRate = instanceFeed ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
     }
@@ -56,13 +62,13 @@ namespace GL {
     }
 
     VkVertexInputAttributeDescription& Pipeline::_LocateAttrib(GLuint index) noexcept {
-        _Attribs.emplace_back().location = static_cast<uint32_t>(index);
-        return _Attribs.back();
+        _CreateInfo->_Attribs.emplace_back().location = static_cast<uint32_t>(index);
+        return _CreateInfo->_Attribs.back();
     }
 
-    std::pair<VkVertexInputBindingDescription&, VkBuffer*&> Pipeline::_LocateBinding(GLuint index) noexcept {
-        _Bindings.emplace_back().binding = static_cast<uint32_t>(index);
-        return {_Bindings.back(), _Binds.emplace_back()};
+    VkVertexInputBindingDescription& Pipeline::_LocateBinding(GLuint index) noexcept {
+		_CreateInfo->_Bindings.emplace_back().binding = static_cast<uint32_t>(index);
+		return _CreateInfo->_Bindings.back();
     }
 }
 
@@ -101,7 +107,7 @@ void glPipelineVertexBuffersMGLV(GLuint pipeline, GLuint first, GLsizei count, c
 }
 
 void glPipelineAddVertexBindingMGLV(GLuint pipeline, GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept {
-    reinterpret_cast<GL::Pipeline*>(pipeline)->AddAttribFormatMGLV(index, stride, instanceFeed);
+    reinterpret_cast<GL::Pipeline*>(pipeline)->AddVertexBindingMGLV(index, stride, instanceFeed);
 }
 
 void glPipelineAddAttribFormatMGLV(GLuint pipeline, GLuint index, GLuint binding, GLint size, GLenum type, GLboolean normalized, GLuint offset) noexcept {

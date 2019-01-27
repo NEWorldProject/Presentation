@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma once
 #include <cstddef>
 #include <cstdint>
@@ -488,33 +486,56 @@ namespace GL {
 
     class Shader {
     public:
-        
+	    void CreateMGLV(GLenum type, const void* binary, GLsizei length, const char* entry) noexcept;
+		void Delete() noexcept;
     private:
+		friend class Program;
+		VkShaderModule _Module { nullptr };
+		VkPipelineShaderStageCreateInfo _StageInfo;
     };
 
     class Program {
-
+    public:
+		GLuint Create() noexcept;
+		void Delete() noexcept;
+		void AttachShader(const Shader& shader) noexcept;
+		void DetachShader(const Shader& shader) noexcept;
+    private:
+		friend class Pipeline;
+		const Shader* _Slots[8]{nullptr}; // Just in case more is added in the future
     };
+
+	class PipelineLayout {
+		
+	};
 
     class Pipeline {
     public:
         void Create() noexcept;
         void Delete() noexcept;
-        void CompileMGLV() noexcept;
         void ElementBuffer(GLuint buffer) noexcept;
+		// Setup Group
+		void CompileMGLV() noexcept;
+		void AttachProgram(const Program& program) noexcept;
+		void AddVertexBindingMGLV(GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept;
+		void AddAttribFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLboolean normalized, GLuint offset) noexcept;
+		void AddAttribIFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+		void AddAttribLFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
+		// Dynamic Group
         void VertexBufferMGLV(GLuint bindingIndex, Buffer& buffer) noexcept;
         void VertexBuffersMGLV(GLuint first, GLsizei count, const Buffer* buffers) noexcept;
-        void AddVertexBindingMGLV(GLuint index, GLsizei stride, GLboolean instanceFeed) noexcept;
-        void AddAttribFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLboolean normalized, GLuint offset) noexcept;
-        void AddAttribIFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
-        void AddAttribLFormatMGLV(GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
         void BindingDivisor(GLuint bindingIndex, GLuint divisor) noexcept;
     private:
         VkVertexInputAttributeDescription& _LocateAttrib(GLuint index) noexcept;
-        std::pair<VkVertexInputBindingDescription&, VkBuffer*&> _LocateBinding(GLuint index) noexcept;
-        std::vector<VkBuffer*> _Binds;
-        std::vector<VkVertexInputAttributeDescription> _Attribs;
-        std::vector<VkVertexInputBindingDescription> _Bindings;
+        VkVertexInputBindingDescription& _LocateBinding(GLuint index) noexcept;
+		struct CreateInfo {
+			std::vector<VkVertexInputAttributeDescription> _Attribs;
+			std::vector<VkVertexInputBindingDescription> _Bindings;
+			const Program* _Program = nullptr;
+		};
+    	CreateInfo* _CreateInfo = nullptr;
+		VkPipeline _Pipeline = nullptr;
+		std::vector<VkBuffer*> _Binds;
     };
 }
 
@@ -535,13 +556,12 @@ void glFlushMappedNamedBufferRange(GLuint buffer, GLintptr offset, GLsizeiptr le
 // End Buffer
 
 // Begin Shader
-void glAttachShader(GLuint program, GLuint shader) noexcept;
-GLuint glCreateProgram() noexcept;
-GLuint glCreateShader(GLenum type) noexcept;
-void glDeleteProgram(GLuint program) noexcept;
+GLuint glCreateShaderMGLV(GLenum type, const void *binary, GLsizei length, const char* entry) noexcept;
 void glDeleteShader(GLuint shader) noexcept;
+GLuint glCreateProgram() noexcept;
+void glDeleteProgram(GLuint program) noexcept;
+void glAttachShader(GLuint program, GLuint shader) noexcept;
 void glDetachShader(GLuint program, GLuint shader) noexcept;
-void glShaderBinary(GLsizei count, const GLuint *shaders, GLenum binaryformat, const void *binary, GLsizei length) noexcept;
 // End Shader
 
 // Begin Pipeline
@@ -557,5 +577,3 @@ void glPipelineAddAttribIFormatMGLV(GLuint pipeline, GLuint index, GLuint bindin
 void glPipelineAddAttribLFormatMGLV(GLuint pipeline, GLuint index, GLuint binding, GLint size, GLenum type, GLuint offset) noexcept;
 void glPipelineBindingDivisorMGLV(GLuint pipeline, GLuint bindingIndex, GLuint divisor) noexcept;
 // End Pipeline
-
-#pragma clang diagnostic pop

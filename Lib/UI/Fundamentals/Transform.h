@@ -20,7 +20,8 @@ namespace Presentation::UI {
         TransformBase* _Parent = nullptr;
     };
 
-    struct TransformHolder: TransformBase {
+    class TransformHolder: public TransformBase {
+    public:
         void Content(TransformBase& child) noexcept;
     };
 

@@ -1,8 +1,5 @@
 #pragma once
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
 #ifndef GL_VERSION_1_0
 #define GL_VERSION_1_0 1
 constexpr auto GL_DEPTH_BUFFER_BIT               = 0x00000100;
@@ -1445,5 +1442,3 @@ constexpr auto GL_MAX_TEXTURE_MAX_ANISOTROPY     = 0x84FF;
 constexpr auto GL_TRANSFORM_FEEDBACK_OVERFLOW    = 0x82EC;
 constexpr auto GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW = 0x82ED;
 #endif /* GL_VERSION_4_6 */
-
-#pragma clang diagnostic pop
